@@ -23,8 +23,10 @@ vars_sdp = [x1; x2];
 Cons = setCons(eg);
 
 % data, with input u \in [-1,1]
-eps = 1e-2; % noise level for robust data driven
-epsw = 1e-2; % noise level of disturbance
+% eps = 1e-2; % noise level for robust data driven
+% epsw = 1e-2; % noise level of disturbance
+eps = 1e-1; % noise level for robust data driven
+epsw = 1e-1; % noise level of disturbance
 %% even for unbounded control: eps 1e-3 works but 1e-2 not 
 
 X = getDataRND(eg,eps,Cons.T); %

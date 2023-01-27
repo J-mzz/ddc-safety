@@ -30,6 +30,8 @@ X = getDataRND(eg,eps,Cons.T); %
 
 % consistency set
 [A,B,xi] = getCons(X,Cons);
+
+% [A_red, b_red] = nontrivial_constraints(A, B);
 Cons.A = A;
 Cons.B = B;
 Cons.xi = xi;
