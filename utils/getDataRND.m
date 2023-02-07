@@ -23,7 +23,8 @@ for i = 1:N
     
     xdot = subs(f+g*u+noise);
     
-    curr = [u,0,x1,x2,xdot(1),xdot(2)];
+    curr = [u,i,x1,x2,xdot(1),xdot(2)];
+    
     x = [x;curr];
 end
 

@@ -1,4 +1,4 @@
-function [A,B,xi] = getCons(X,Cons)
+function [A,B,xi] = getCons(X,Cons) 
 % 
 % Output: 
 %   A,B in (11)
@@ -10,18 +10,20 @@ function [A,B,xi] = getCons(X,Cons)
 %   n: # of states
 %   T: # of samples
 
+kkk = 1;
+
 df = Cons.df;
 dg = Cons.dg;
 n = Cons.n;
 T = Cons.T;
 
-lf = nchoosek(df+n, n) -1;         % length of monomial vector for f(x)
+lf = nchoosek(df+n, n) -kkk;         % length of monomial vector for f(x)
 lg = nchoosek(dg+n, n);         % ... for g(x)
 
 syms x1 x2
 vars = [x1,x2];
 
-p = monomials(vars, 1:df);      % phi
+p = monomials(vars, kkk:df);      % phi
 g = monomials(vars, 0:dg);      % gamma
 
 p_fun = matlabFunction(p);

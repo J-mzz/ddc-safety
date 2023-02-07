@@ -83,7 +83,7 @@ addParameter(p, 'yPlotNum', default_yPlotNum);
 addParameter(p, 'arrowDensity', default_arrowDensity);
 addParameter(p, 'arrowSize', default_arrowSize);
 addParameter(p, 'axisMarginRatio', default_axisMarginRatio);
-addParameter(p, 'quiverDensity', default_quiverDensty);
+addParameter(   p, 'quiverDensity', default_quiverDensty);
 
 
 addParameter(p, 'lineColor', default_lineColor);
