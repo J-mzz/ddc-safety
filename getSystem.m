@@ -11,7 +11,7 @@ switch eg
     case 2
         f = [x2; -x1 + 1/3*x1^3 - x2];
     case 3
-        A = [0 1; -1 0];
+        A = [0 1; -5 -5];
         f = A*vars;
 end
 

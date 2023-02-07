@@ -1,11 +1,12 @@
 close all;clear;clc
 yalmip('clear')
 
-% rng(1)
+rng(1)
 %% safe/ unsafe region
 % radius, center
 Region.r0 = 0.25;
-Region.c0 = [1.5; 0];     % initial
+% Region.c0 = [1.5; 0];     % initial
+Region.c0 = [0; -3];     % initial
 
 Region.ru = 0.16;
 Region.cu = [-1; -1];     % unsafe
@@ -25,14 +26,25 @@ Cons = setCons(eg);
 % data, with input u \in [-1,1]
 % eps = 1e-2; % noise level for robust data driven
 % epsw = 1e-2; % noise level of disturbance
-eps = 1e-1; % noise level for robust data driven
-epsw = 1e-1; % noise level of disturbance
+eps = 5e-2; % noise level for robust data driven
+epsw = 5e-2; % noise level of disturbance
 %% even for unbounded control: eps 1e-3 works but 1e-2 not 
 
 X = getDataRND(eg,eps,Cons.T); %
 
 % consistency set
 [A,B,xi] = getCons(X,Cons);
+
+N = [A B; -A -B];
+if rank(N) ~= size(N,2)
+    error('Not enough data collected!')
+end
+
+e = [eps*ones(Cons.n*Cons.T,1)+xi; eps*ones(Cons.n*Cons.T,1)-xi];
+[N_red, e_red] = nontrivial_constraints(N, e);
+Cons.N = N_red;
+Cons.e = e_red;
+
 Cons.A = A;
 Cons.B = B;
 Cons.xi = xi;
@@ -51,14 +63,17 @@ vars = [z1; z2];
 [f,g] = getSystem(eg,vars);	% symbolic
 
 vec_rho = monomials(vars, 0:Cons.drho);
-vec_psi = monomials(vars, 1:Cons.dpsi);
+vec_psi = monomials(vars, 1:Cons.dpsi); % 1:Cons.dpsi
 rho = cr'*vec_rho;
 psi = cp'*vec_psi;
 u = psi/rho;
 
+v = monomials(vars,0:Cons.drho/2);
+tol = v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
+
 rhof = jacobian(rho,vars)*f + rho*(jacobian(f(1),z1)+jacobian(f(2),z2));
 psig = jacobian(psi,vars)*g + psi*(jacobian(g(1),z1)+jacobian(g(2),z2));
-div = rhof + psig;
+div = rhof + psig + 2*tol;
 
 R0 = Region.r0;
 C0 = Region.c0;     % initial
@@ -93,14 +108,14 @@ PSI = matlabFunction(psi);
 U = matlabFunction(psi/rho);
 
 
-
 %% plot phase portrait and trajectories for closed loop
 
 warning off
-testSys(Region,f,g,u)
-warning on
+testSys(Region,f,g,u,0)
 
 legend([f1,f2,f3,f4],{'rho','x0','xu','div'},'FontSize',12)
+warning on
+
 % figure(2)
 % clf
 % fsurf(rho)
