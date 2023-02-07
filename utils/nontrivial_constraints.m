@@ -39,7 +39,7 @@ for i = 1:m
         
 %         prob = struct('f', cost_curr,'A', A, 'b', b, 'options', opts)
         [w_curr,fval,exitflag,output,dual_curr] = ...
-                    linprog(cost_curr,A,b, zeros(0, d), [], [], [], opts);
+                    linprog(cost_curr',A,b, zeros(0, d), [], [], [], opts);
         %             linprog(prob);
         active_cons = dual_curr.ineqlin>tol;
 %         active_cons = dual_curr{1} > tol;
@@ -57,4 +57,3 @@ b_red = b(nontrivial, :);
 
 
 end
-
