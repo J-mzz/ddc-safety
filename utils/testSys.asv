@@ -1,6 +1,8 @@
 function DATA = testSys(Region,f,g,u,epsw)
 %% plot closed loop phase protrait
 
+DATA.T = {};
+Y = {};
 r0 = Region.r0;
 c0 = Region.c0;     % initial
 
@@ -13,28 +15,27 @@ y = c0(2) + sqrt(r0) * cos(sample);
 FF = matlabFunction(f+g*u);
 F = matlabFunction(f);
 U = matlabFunction(u);
-% G = matlabFunction(g);
+
 %-------------------------Trajectory: ode45
 
 tspan = [0:.1:1.2]; % time span
 curr_ode_options =  odeset('RelTol', 1e-7, ...
-    'AbsTol', 1e-8, 'MaxStep', 1e-5);
+    'AbsTol', 1e-8, 'MaxStep', 1e-6);
 
 Noise = @(t, x) epsw*(2*rand(2,1)-ones(2,1));
 FFF = @(t,x) FF(x(1),x(2)) + Noise(x(1),x(2));
 
 for i = 1:n
-    x0 = [x(4);y(4)];% [x(9);y(9)];
+    x0 = [x(9);y(9)];% [x(i);y(i)];
     X = ode15s(FFF, tspan, x0, curr_ode_options);   % u \in [-1,1]
     
-    DataX{i} = X.y(1,:);
-    DataY{i} = X.y(2,:);
+    DATA{2*i-1} = X.y(1,:);
+    DATA(2*i) = X.y(2,:);
     
 % 	plot(X.y(1,:), X.y(2,:),'c','LineWidth',2);
     plot(X.y(1,:), X.y(2,:),'c');
 end
-DATA.X = DataX;
-DATA.Y = DataY;
+
 %-------------------------Trajectory: streamline
 
 % q = 5;     % bound

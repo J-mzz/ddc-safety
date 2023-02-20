@@ -26,8 +26,8 @@ Cons = setCons(eg);
 % data, with input u \in [-1,1]
 % eps = 1e-2; % noise level for robust data driven
 % epsw = 1e-2; % noise level of disturbance
-eps = 5e-2; % noise level for robust data driven
-epsw = 5e-2; % noise level of disturbance
+eps = 1; % noise level for robust data driven
+epsw = 1; % noise level of disturbance
 %% even for unbounded control: eps 1e-3 works but 1e-2 not 
 
 X = getDataRND(eg,eps,Cons.T); %
@@ -50,7 +50,7 @@ Cons.B = B;
 Cons.xi = xi;
 
 %% ddc safety control design
-options = sdpsettings('solver', 'mosek', 'verbose', 0);
+options = sdpsettings('solver', 'mosek', 'verbose', 1);
 out = ddc_safety_robust(Cons,Region,eps,epsw,options);
 
 out.sol
@@ -68,12 +68,6 @@ rho = cr'*vec_rho;
 psi = cp'*vec_psi;
 u = psi/rho;
 
-v = monomials(vars,0:Cons.drho/2);
-tol = v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
-
-rhof = jacobian(rho,vars)*f + rho*(jacobian(f(1),z1)+jacobian(f(2),z2));
-psig = jacobian(psi,vars)*g + psi*(jacobian(g(1),z1)+jacobian(g(2),z2));
-div = rhof + psig + 2*tol;
 
 R0 = Region.r0;
 C0 = Region.c0;     % initial
@@ -81,6 +75,17 @@ Ru = Region.ru;
 Cu = Region.cu;
 x0 = R0 - (x1-C0(1))^2 - (x2-C0(2))^2;   % rho > 0
 xu = Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2;   % rho < 0
+
+zu = Ru - (z1-Cu(1))^2 - (z2-Cu(2))^2;   % rho < 0
+
+v = monomials(vars,0:Cons.drho/2);
+tol = v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
+
+rhof = jacobian(rho,vars)*f + rho*(jacobian(f(1),z1)+jacobian(f(2),z2));
+psig = jacobian(psi,vars)*g + psi*(jacobian(g(1),z1)+jacobian(g(2),z2));
+% div = rhof + psig -rho*zu+2e-6; %2*tol;
+div = rhof + psig +2*tol;
+
 
 %% plot
 figure(1)
@@ -111,7 +116,7 @@ U = matlabFunction(psi/rho);
 %% plot phase portrait and trajectories for closed loop
 
 warning off
-testSys(Region,f,g,u,0)
+DATA = testSys(Region,f,g,u,epsw);
 
 legend([f1,f2,f3,f4],{'rho','x0','xu','div'},'FontSize',12)
 warning on
@@ -123,4 +128,10 @@ warning on
 
 % out.sol.info
 
+% save('9_w_u_diff_x0')
+DATAX = DATA.X{1};
+DATAY = DATA.Y{1};
+DATA.U = U(DATAX,DATAY);
+
+[minimum,index] = min(DATA.U);
 

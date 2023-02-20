@@ -134,7 +134,7 @@ Region.cu = 0.16;  Region.cu = [-1; -1];
 
 % phase portrait and closed loop dynamics
 warning off
-testSys(Region,f,g,u,0)
+testSys(Region,f,g,u,1e-3)
 warning on
 
 
