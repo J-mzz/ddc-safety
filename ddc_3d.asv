@@ -261,36 +261,23 @@ f4 = quiver3(X,Y,Z,U,V,W,'Color',[0.5,0.5,0.5]);
 
 %% plot 3d trajectories
 y0 = [-.4;0;0];
-F = matlabFunction(f);
+Xdot_open = matlabFunction(f);
 Xdot = matlabFunction(f+g*u);
-Ft = @(t,y) F(y(1),y(2),y(3));
+Ft = @(t,y) Xdot(y(1),y(2),y(3));
 Noise = @(t, y) epsw*(2*rand(n,1)-ones(n,1));
 
 % Ft_noise_open = @(t, y) Xdot_open(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
-Ft_noise = @(t, y) F(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
+Ft_noise = @(t, y) Xdot(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
 
-ode_options1 = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-6, 'Events',@mytimer);
 ode_options = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-6);
-tspan = 0:5;
+tspan = 0:3;
 
 for i = 1:10
-    tic;
-    [t,y] = ode15s(Ft,tspan,y0,ode_options);
+    [~,y] = ode45(Ft,tspan,y0,ode_options);
     i
     plot3(y(:,1),y(:,2),y(:,3),'r')
-    [~,y] = ode15s(Ft_noise,tspan,y0,ode_options);
-    i
-    plot3(y(:,1),y(:,2),y(:,3),'k')
+%     [~,y] = ode15s(Ft_noise,tspan,y0,ode_options);
+%     i
+%     plot3(y(:,1),y(:,2),y(:,3),'k')
 end
 % hold off
-
-
-
-
-
-function [value, isterminal, direction] = mytimer(t, y)
-    TimeOut = 30;
-    value = toc-TimeOut;
-    isterminal = 1;
-    direction = 0;
-end
