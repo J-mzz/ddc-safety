@@ -25,8 +25,8 @@ f = A*vars + B*temp_vars;
 g = [0; 0; 1];
 
 % set x0, xu
-R0 = 0.04;  C0 = [-0.5; 0; 0];        % radius,center
-Ru = 0.04;  Cu = [0.25; 0; 0];
+R0 = 0.04;  C0 = [-.5; 0; 0];        % radius,center
+Ru = 0.04;  Cu = [0; 0; 0];
 
 x0 = R0 - (x1-C0(1))^2 - (x2-C0(2))^2 - (x3-C0(3))^2;   % rho > 0
 xu = Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2 - (x3-Cu(3))^2;   % rho < 0
@@ -51,9 +51,9 @@ div = jacobian(rho,vars)*f + ...
 ubound = 1; % bound on input: |psi/rho| < ubound
 
 % constraints
-F = [sos(div), ...
+F = [sos(div + 1e-6), ...
      sos(rho  - x0*s1), ...     % r >= 0, in initial x0
-     sos(-rho - xu*s2), ...     % r <= 0, in unsafe xu
+     sos(-rho - xu*s2 -1e-8), ...     % r <= 0, in unsafe xu
      sos(ubound*rho + psi), ...
      sos(ubound*rho - psi), ...
      sos(s1),sos(s2)];
@@ -107,12 +107,12 @@ hold on
 f2 = fimplicit3(z0,'FaceColor',[0.9290 0.6940 0.1250],'EdgeColor','none');
 f3 = fimplicit3(zu,'FaceColor',[0.4660 0.6740 0.1880],'EdgeColor','none');
 
-xlim([-1,.8])
-ylim([-1,.8])
-zlim([-1,.8])
+xlim([-.8,0.5])
+ylim([-.8,0.5])
+zlim([-.8,0.5])
 
 %% plot 3d phase portrait
-len = -1:0.3:0.8;
+len = -.8:0.2:0.5;
 
 [X,Y,Z] = meshgrid(len,len,len);
 
@@ -124,12 +124,12 @@ f4 = quiver3(X,Y,Z,U,V,W,'Color',[0.5,0.5,0.5]);
 
 
 %% plot 3d trajectories
-y0 = [-.7;0;0];
+y0 = [-.3;0;0];
 F = matlabFunction(f);
 Ft = @(t,y) F(y(1),y(2),y(3));
 
 ode_options = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-6);
-tspan = 0:3;
+tspan = 0:5;
 [t,y] = ode45(Ft,tspan,y0,ode_options);
 
 plot3(y(:,1),y(:,2),y(:,3),'r')
