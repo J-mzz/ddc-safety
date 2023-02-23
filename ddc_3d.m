@@ -248,20 +248,22 @@ zlim([-.8,0.5])
 
 %}
 %% plot 3d phase portrait
-len = -.8:0.2:0.5;
+% len = -.8:0.2:0.5;
+% 
+% [X,Y,Z] = meshgrid(len,len,len);
+% 
+% U =   - 2*X.^3 + X/2 - 2*Z.^3 + (5*Z)/2 + Y;
+% V = 2*Y.^3 - (3*Y)/2 + 2*Z.^3 - (5*Z)/2 - X;
+% W =   2*X.^3 - (3*X)/2 + 2*Y.^3 - Y/2 - 2*Z;
+% 
+% f4 = quiver3(X,Y,Z,U,V,W,'Color',[0.5,0.5,0.5]);
 
-[X,Y,Z] = meshgrid(len,len,len);
-
-U =   - 2*X.^3 + X/2 - 2*Z.^3 + (5*Z)/2 + Y;
-V = 2*Y.^3 - (3*Y)/2 + 2*Z.^3 - (5*Z)/2 - X;
-W =   2*X.^3 - (3*X)/2 + 2*Y.^3 - Y/2 - 2*Z;
-
-f4 = quiver3(X,Y,Z,U,V,W,'Color',[0.5,0.5,0.5]);
-
+% hold off
 
 %% plot 3d trajectories
 y0 = [-.4;0;0];
 F = matlabFunction(f);
+U = matlabFunction(u);
 Xdot = matlabFunction(f+g*u);
 Ft = @(t,y) F(y(1),y(2),y(3));
 Noise = @(t, y) epsw*(2*rand(n,1)-ones(n,1));
@@ -269,28 +271,86 @@ Noise = @(t, y) epsw*(2*rand(n,1)-ones(n,1));
 % Ft_noise_open = @(t, y) Xdot_open(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
 Ft_noise = @(t, y) F(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
 
-ode_options1 = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-6, 'Events',@mytimer);
-ode_options = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-6);
+% timer terminate intergrator after 300s
+ode_options6 = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-6, 'Events',@mytimer);
+ode_options5 = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-5, 'Events',@mytimer);
 tspan = 0:5;
 
-for i = 1:10
-    tic;
-    [t,y] = ode15s(Ft,tspan,y0,ode_options);
-    i
-    plot3(y(:,1),y(:,2),y(:,3),'r')
-    [~,y] = ode15s(Ft_noise,tspan,y0,ode_options);
-    i
-    plot3(y(:,1),y(:,2),y(:,3),'k')
+% [t,y] = ode15s(Ft,tspan,y0,ode_options);
+% plot3(y(:,1),y(:,2),y(:,3),'r')
+global DATALOG
+global data_index
+global trajectory_index
+
+DATALOG = [];
+trajectory_index = 1;
+
+%% trajecories of system without control with noise
+% data_index = 1
+% tic
+% [t,y] = ode15s(@(t,y) mypoly3(t,y,0,0,F(y(1),y(2),y(3))),tspan,y0,ode_options5);
+% % YY1 = DATALOG{trajectory_index}(:, 3);
+% % YY2 = DATALOG{trajectory_index}(:, 4);
+% % YY3 = DATALOG{trajectory_index}(:, 5);
+% 
+% for trajectory_index = 2:11
+%     data_index = 1
+%     tic
+%     [t,y] = ode15s(@(t,y) mypoly3(t,y,epsw,0,F(y(1),y(2),y(3)) ),tspan,y0,ode_options5);
+% %     YY1 = DATALOG{trajectory_index}(:, 3);
+% %     YY2 = DATALOG{trajectory_index}(:, 4);
+% %     YY3 = DATALOG{trajectory_index}(:, 5);
+% %     plot3(YY1(1:end-1),YY2(1:end-1),YY3(1:end-1),'b') 
+% end
+
+%% trajecories of system with control with noise
+data_index = 1
+tic
+[t,y] = ode15s(@(t,y) mypoly3(t,y,0,U(y(1),y(2),y(3)),F(y(1),y(2),y(3))),tspan,y0,ode_options5);
+% YY1 = DATALOG{trajectory_index}(:, 3);
+% YY2 = DATALOG{trajectory_index}(:, 4);
+% YY3 = DATALOG{trajectory_index}(:, 5);
+% plot3(YY1(1:end-1),YY2(1:end-1),YY3(1:end-1),'b') 
+
+for trajectory_index = 2:31
+    data_index = 1
+    tic
+    [t,y] = ode15s(@(t,y) mypoly3(t,y,epsw,U(y(1),y(2),y(3)),F(y(1),y(2),y(3)) ),tspan,y0,ode_options6);
+%     YY1 = DATALOG{trajectory_index}(:, 3);
+%     YY2 = DATALOG{trajectory_index}(:, 4);
+%     YY3 = DATALOG{trajectory_index}(:, 5);
+%     plot3(YY1(1:end-1),YY2(1:end-1),YY3(1:end-1),'b') 
 end
-% hold off
+%% 
 
+function dxdt = mypoly3(t,x,epsw,u,f)
+global DATALOG
+global data_index
+global trajectory_index
 
+    DATALOG{trajectory_index}(data_index, 1) = u;
+    DATALOG{trajectory_index}(data_index, 2) = t;
+    DATALOG{trajectory_index}(data_index, 3) = x(1);
+    DATALOG{trajectory_index}(data_index, 4) = x(2);
+    DATALOG{trajectory_index}(data_index, 5) = x(3);
+    noise = epsw*(2*rand(3,1)-1);
+    dxdt = f + [0;0;1]*u + noise;
+    DATALOG{trajectory_index}(data_index, 6) = dxdt(1);
+    DATALOG{trajectory_index}(data_index, 7) = dxdt(2);
+    DATALOG{trajectory_index}(data_index, 8) = dxdt(3);
+    DATALOG{trajectory_index}(data_index,  9) = noise(1);
+    DATALOG{trajectory_index}(data_index, 10) = noise(2);
+    DATALOG{trajectory_index}(data_index, 11) = noise(3);
+    data_index = data_index + 1;
+end
 
 
 
 function [value, isterminal, direction] = mytimer(t, y)
-    TimeOut = 30;
+% set a timer to terminate in 'TimeOut' seconds
+    TimeOut = 300;
     value = toc-TimeOut;
     isterminal = 1;
     direction = 0;
 end
+% YY1 = DATALOG{1}(:, 3);YY2 = DATALOG{1}(:, 4);YY3 = DATALOG{1}(:, 5);
