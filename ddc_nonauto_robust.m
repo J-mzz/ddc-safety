@@ -1,7 +1,7 @@
 close all;clear;clc
 yalmip('clear')
 
-rng(1)
+rng(10)
 %% safe/ unsafe region
 % radius, center
 Region.r0 = 0.25;
@@ -24,8 +24,6 @@ vars_sdp = [x1; x2];
 Cons = setCons(eg);
 
 % data, with input u \in [-1,1]
-% eps = 1e-2; % noise level for robust data driven
-% epsw = 1e-2; % noise level of disturbance
 eps = 1; % noise level for robust data driven
 epsw = 1; % noise level of disturbance
 %% even for unbounded control: eps 1e-3 works but 1e-2 not 
@@ -68,14 +66,13 @@ rho = cr'*vec_rho;
 psi = cp'*vec_psi;
 u = psi/rho;
 
-
 R0 = Region.r0;
 C0 = Region.c0;     % initial
 Ru = Region.ru;
 Cu = Region.cu;
 x0 = R0 - (x1-C0(1))^2 - (x2-C0(2))^2;   % rho > 0
 xu = Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2;   % rho < 0
-
+xu1 = 0.16 - (x1+1)^2 - (x2-1)^2;   % rho < 0
 zu = Ru - (z1-Cu(1))^2 - (z2-Cu(2))^2;   % rho < 0
 
 v = monomials(vars,0:Cons.drho/2);
@@ -83,10 +80,9 @@ tol = v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20)
 
 rhof = jacobian(rho,vars)*f + rho*(jacobian(f(1),z1)+jacobian(f(2),z2));
 psig = jacobian(psi,vars)*g + psi*(jacobian(g(1),z1)+jacobian(g(2),z2));
-% div = rhof + psig -rho*zu+2e-6; %2*tol;
-div = rhof + psig +2*tol;
-
-
+div = rhof + psig - rho*zu + 2e-6; %2*tol;
+% div = rhof + psig +2*tol;
+% div2 = rhof + psig + 2e-6;
 %% plot
 figure(1)
 clf
@@ -103,22 +99,30 @@ f3 = f3{1};
 f3 = str2sym(f3);
 f3 = fcontour(f3,'g');
 f3.LevelList = 0;
-f4 = fcontour(div,'b');
-f4.LevelList = 0;
-
+% f4 = fcontour(div,'b');
+% f4.LevelList = 0;
+% f5 = fcontour(rho*zu,'c');
+f6 = sdisplay(xu1);
+f6 = f6{1};
+f6 = str2sym(f6);
+f6 = fcontour(f6,'g');
+f6.LevelList = 0;
 % check function value
 DIV = matlabFunction(div);
 RHO = matlabFunction(rho);
 PSI = matlabFunction(psi);
-U = matlabFunction(psi/rho);
+U = matlabFunction(u);
+DotX = matlabFunction(f+g*u);
 
-
+xlim([-5,5])
+ylim([-5,5])
+axis square
 %% plot phase portrait and trajectories for closed loop
 
 warning off
 DATA = testSys(Region,f,g,u,epsw);
 
-legend([f1,f2,f3,f4],{'rho','x0','xu','div'},'FontSize',12)
+legend([f1,f2,f3],{'rho','x0','xu'},'FontSize',12)
 warning on
 
 % figure(2)
@@ -128,10 +132,14 @@ warning on
 
 % out.sol.info
 
-% save('9_w_u_diff_x0')
-DATAX = DATA.X{1};
-DATAY = DATA.Y{1};
-DATA.U = U(DATAX,DATAY);
+% save('9_w_u_same_x0')
 
-[minimum,index] = min(DATA.U);
+% data_X = DATA.X{1};
+% data_Y = DATA.Y{1};
+% data_U = U(data_X,data_Y);
+% data_DX = diff(data_X);
+% data_DY = diff(data_Y);
+% data_noise = [data_DX;data_DY] - DotX(data_X(1:end-1),data_Y(1:end-1));
+% 
+% [minimum,index] = min(DATA.U);
 
