@@ -1,7 +1,7 @@
 close all;clear;clc
 yalmip('clear')
 
-rng(1)
+rng(20)
 %% initialization
 d_r = 4;
 
@@ -10,10 +10,10 @@ d_r = 4;
 sdpvar x1 x2 x3
 vars = [x1; x2; x3];
 
-A = [-1  1  1;
+Af = [-1  1  1;
      -1  0 -1;
       0  1 -2];
-B = [-1  0 -1;
+Bf = [-1  0 -1;
       0  1  1;
       1  1  0];
 
@@ -21,7 +21,7 @@ temp_vars = 1/2*[4*x1^3 - 3*x1;
                  4*x2^3 - 3*x2;
                  4*x3^3 - 3*x3];
 
-f = A*vars + B*temp_vars;
+f = Af*vars + Bf*temp_vars;
 g = [0; 0; 1];
 %
 %% setup
@@ -47,7 +47,7 @@ temp_vars = 1/2*[4*z1^3 - 3*z1;
                  4*z2^3 - 3*z2;
                  4*z3^3 - 3*z3];
 
-f = A*vars + B*temp_vars;
+f = Af*vars + Bf*temp_vars;
 
 sample_data = [];
 for i = 1:T
@@ -145,8 +145,8 @@ xu = Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2 - (x3-Cu(3))^2;   % rho < 0
 [s2,c2] = polynomial(vars,drho-2);
 
 % slackness
-% [~,~,v] = polynomial(vars, drho/2, 0);
-% tol1 =  v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
+[~,~,v] = polynomial(vars, drho/2, 0);
+tol1 =  v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
 
 % solve with yalmip
 dmax = max(dpsi+dg-1, drho+df-1);
@@ -172,13 +172,14 @@ k = coefficients(-D1-D2-Y*N, vars);
 ubound = 1; % |psi/rho| <= ubound 
 
 F = [k == 0,...
-    sos(-Y*e - rho*xu + 2e-6),... %2e-6; 
+    sos(-Y*e - rho*xu + 1e-6),... %2e-6; 
     (sos(Y)):'y',...
-    sos(rho -s1*x0),...	% since rho = a/b where b > 0
-    sos(-rho-s2*xu-2e-8),...
+    sos(rho -s1*x0 -1*tol1),...	% since rho = a/b where b > 0
+    sos(-rho-s2*xu -1*tol1),...
     sos(ubound*rho -psi),...    % bound input u
     sos(ubound*rho +psi),...
-    sos(s1),sos(s2)];
+    sos(s1),sos(s2),...
+    sum(cr) == 1e-7];
 
 if epsw ~= 0
     kk = coefficients(-jacobian(rho,vars) -YY*[eye(n);-eye(n)], vars);
@@ -205,10 +206,10 @@ D2 = value(coefficients(D2,vars));
 syms z1 z2 z3
 vars = [z1; z2; z3];
 
-A = [-1  1  1;
+Af = [-1  1  1;
      -1  0 -1;
       0  1 -2];
-B = [-1  0 -1;
+Bf = [-1  0 -1;
       0  1  1;
       1  1  0];
 
@@ -216,7 +217,7 @@ temp_vars = 1/2*[4*z1^3 - 3*z1;
                  4*z2^3 - 3*z2;
                  4*z3^3 - 3*z3];
 
-f = A*vars + B*temp_vars;
+f = Af*vars + Bf*temp_vars;
 g = [0; 0; 1];
 
 vec_rho = monomials(vars, 0:drho);
@@ -239,14 +240,16 @@ div = rhof + psig - rho*zu; %2*tol;
 figure()
 f1 = fimplicit3(rho,'FaceColor',[0.3010 0.7450 0.9330],'EdgeColor','none');
 hold on 
-f2 = fimplicit3(z0,'FaceColor',[0.9290 0.6940 0.1250],'EdgeColor','none');
-f3 = fimplicit3(zu,'FaceColor',[0.4660 0.6740 0.1880],'EdgeColor','none');
 
-xlim([-.8,0.5])
-ylim([-.8,0.5])
-zlim([-.8,0.5])
+[Xs, Ys, Zs] = sphere(50);
+surf(sqrt(R0)*Xs+C0(1), sqrt(R0)*Ys+C0(2), sqrt(R0)*Zs+C0(3), 'FaceColor',[0.9290 0.6940 0.1250],'EdgeColor','none')
+surf(sqrt(Ru)*Xs+Cu(1), sqrt(Ru)*Ys+Cu(2), sqrt(Ru)*Zs+Cu(3), 'FaceColor',[0.4660 0.6740 0.1880],'EdgeColor','none')
+view(3)
 
-%}
+xlim([-.8,0.2])
+ylim([-.5,0.5])
+zlim([-.5,0.5])
+
 %% plot 3d phase portrait
 % len = -.8:0.2:0.5;
 % 
@@ -265,12 +268,85 @@ y0 = [-.4;0;0];
 F = matlabFunction(f);
 U = matlabFunction(u);
 Xdot = matlabFunction(f+g*u);
-Ft = @(t,y) F(y(1),y(2),y(3));
-Noise = @(t, y) epsw*(2*rand(n,1)-ones(n,1));
 
-% Ft_noise_open = @(t, y) Xdot_open(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
-Ft_noise = @(t, y) F(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
+%% 
+T = 5;
+mu = 0.01;
+ode_opt = odeset('RelTol', 1e-6,'AbsTol', 1e-8);
 
+theta = (1:30)/30 * 2*pi;
+xxx = -0.5;
+yyy = 0.1*sin(theta);
+zzz = 0.1*cos(theta);
+
+for i = 1:30
+    yprev = [xxx;yyy(i);zzz(i)];
+    t_all = 0;
+    switch_times = 0;
+
+    Ydata = yprev;
+    Udata = U(yprev(1),yprev(2),yprev(3));
+    Tlog = 0;
+    
+    fprintf('current traj: %d \n', i)
+    
+    while t_all < T
+        tmax_curr = exprnd(mu);
+        tmax_curr = min(t_all + tmax_curr, T) - t_all;
+
+        noise_curr = epsw*(2*rand(3,1)-1);
+        
+        % open loop
+%         if i == 1
+            f_curr = @(t, y) F(y(1),y(2),y(3));
+%         else 
+%             f_curr = @(t, y) F(y(1),y(2),y(3)) + noise_curr;
+%         end
+        
+        % close loop
+%         if i == 1
+%             f_curr = @(t, y) Xdot(y(1),y(2),y(3));
+%         else 
+%             f_curr = @(t, y) Xdot(y(1),y(2),y(3)) + noise_curr;
+%         end
+        warning off
+        [tcurr, ycurr] = ode15s(f_curr, [0, tmax_curr], yprev, ode_opt);
+        warning on
+        
+        Ydata = [Ydata, ycurr'];
+        Udata = [Udata, U(ycurr(1),ycurr(2),ycurr(3))];
+        Tlog = [Tlog; t_all + tcurr];
+        switch_times = [switch_times; t_all + tmax_curr];
+
+        yprev = ycurr(end, :)';
+        t_all = t_all + tmax_curr;
+    end
+    
+%     if i == 1
+%         plot3(Ydata(1,:),Ydata(2,:),Ydata(3,:),'r','LineWidth',1)
+%     else
+        plot3(Ydata(1,:),Ydata(2,:),Ydata(3,:),'b')
+%     end
+    
+    DATA.Traj{i} = Ydata;
+    DATA.Input{i} = Udata;
+    DATA.Time{i} = Tlog;
+    DATA.Switch{i} = switch_times;
+end
+hold off
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% previous simulation method
+%{ 
 % timer terminate intergrator after 300s
 ode_options6 = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-6, 'Events',@mytimer);
 ode_options5 = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-5, 'Events',@mytimer);
@@ -307,20 +383,19 @@ trajectory_index = 1;
 data_index = 1
 tic
 [t,y] = ode15s(@(t,y) mypoly3(t,y,0,U(y(1),y(2),y(3)),F(y(1),y(2),y(3))),tspan,y0,ode_options5);
-% YY1 = DATALOG{trajectory_index}(:, 3);
-% YY2 = DATALOG{trajectory_index}(:, 4);
-% YY3 = DATALOG{trajectory_index}(:, 5);
-% plot3(YY1(1:end-1),YY2(1:end-1),YY3(1:end-1),'b') 
 
 for trajectory_index = 2:31
     data_index = 1
     tic
-    [t,y] = ode15s(@(t,y) mypoly3(t,y,epsw,U(y(1),y(2),y(3)),F(y(1),y(2),y(3)) ),tspan,y0,ode_options6);
-%     YY1 = DATALOG{trajectory_index}(:, 3);
-%     YY2 = DATALOG{trajectory_index}(:, 4);
-%     YY3 = DATALOG{trajectory_index}(:, 5);
-%     plot3(YY1(1:end-1),YY2(1:end-1),YY3(1:end-1),'b') 
+    [t,y] = ode15s(@(t,y) mypoly3(t,y,epsw,U(y(1),y(2),y(3)),F(y(1),y(2),y(3)) ),tspan,y0,ode_options5);
+    YY1 = DATALOG{trajectory_index}(:, 3);
+    YY2 = DATALOG{trajectory_index}(:, 4);
+    YY3 = DATALOG{trajectory_index}(:, 5);
+    plot3(YY1(1:end-1),YY2(1:end-1),YY3(1:end-1),'b') 
 end
+
+
+save('datalog_close_clean1_noise','DATALOG')
 %% 
 
 function dxdt = mypoly3(t,x,epsw,u,f)
@@ -354,3 +429,5 @@ function [value, isterminal, direction] = mytimer(t, y)
     direction = 0;
 end
 % YY1 = DATALOG{1}(:, 3);YY2 = DATALOG{1}(:, 4);YY3 = DATALOG{1}(:, 5);
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

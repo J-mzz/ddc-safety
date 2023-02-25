@@ -33,15 +33,15 @@ vars = [x1,x2];
 
 [s1,c1] = polynomial(vars,drho-2);
 [s2,c2] = polynomial(vars,drho-2);
-
+[s3,c3] = polynomial(vars,drho-2);
 % slackness
 [~,~,v] = polynomial(vars, drho/2, 0);
 tol1 =  v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
-tol2 =  v'*1e-8*eye(length(v))*v;       % slackness
 
 % define initial and unsafe region
 x0 = r0 - (x1-c0(1))^2 - (x2-c0(2))^2;	% rho > 0
 xu = ru - (x1-cu(1))^2 - (x2-cu(2))^2;	% rho < 0
+xu1 = 0.16 - (x1+1)^2 - (x2-1)^2;   % rho < 0
 
 % solve with yalmip
 dmax = max(dpsi+dg-kkk, drho+df-kkk);
@@ -67,21 +67,22 @@ ubound = 1; % |psi/rho| <= ubound
 
 F = [k == 0,...
 %     sos(-Y*[eps*ones(n*T, 1)+xi; eps*ones(n*T, 1)-xi] +tol1),...
-    sos(-Y*e + 2*tol1),... %2e-6
-%     sos(-Y*e - rho*xu +2e-6),... %2e-6; 
+%     sos(-Y*e - rho*xu + 2*tol1),... % 2*tol1
+
+    sos(-Y*e - rho*xu +1e-6),... %2e-6; 
+    sos(-Y*e - rho*xu1 +1e-6),... %2e-6; 
+%     sos(-Y*e +1e-6),... %2e-6; 
     (sos(Y)):'y',...
-    ...
-%     kk == 0,...
-%     sos(-YY*[epsw*ones(n, 1); epsw*ones(n, 1)] +tol1),...
-%     sos(YY),...
     ...
     sos(rho -s1*x0 -1*tol1),...	% since rho = a/b where b > 0
     sos(-rho-s2*xu -1*tol1),...
+    sos(-rho-s3*xu1 -2*tol1),...
     ...
     sos(ubound*rho -psi),...    % bound input u
     sos(ubound*rho +psi),...
     ...
-    sos(s1),sos(s2)];
+    sos(s1),sos(s2),...
+    sum(cr) == 1e-7];
 
 if epsw ~= 0
     kk = coefficients(-jacobian(rho,vars) -YY*[eye(n);-eye(n)], vars);
@@ -92,7 +93,7 @@ if epsw ~= 0
         sos(YY)];
 end
 
-sol = solvesos(F, [], options, [coefficients(Y,vars);c1;c2;cr;cp]);
+sol = solvesos(F, [], options, [coefficients(Y,vars);c1;c2;cr;cp;c3]);
 out.cr = value(cr);
 out.cp = value(cp);
 out.sol = sol;

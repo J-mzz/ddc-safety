@@ -1,6 +1,6 @@
 close all;clear;clc
 
-load('all_data')
+load('ex2_closed_T2')
 
 %% extract solutions
 syms z1 z2 z3
@@ -38,10 +38,18 @@ div = rhof + psig - rho*zu; %2*tol;
 
 %% plot 3d rho, x0, xu
 figure()
-f1 = fimplicit3(rho,'FaceColor',[0.3010 0.7450 0.9330],'EdgeColor','none');
-hold on 
-f2 = fimplicit3(z0,'FaceColor',[0.9290 0.6940 0.1250],'EdgeColor','none');
-f3 = fimplicit3(zu,'FaceColor',[0.4660 0.6740 0.1880],'EdgeColor','none');
+colormaps = linspecer(6);
+hold on
+grid on
+
+f1 = fimplicit3(rho,'FaceColor',colormaps(3,:),'EdgeColor','none');%[0.3010 0.7450 0.9330]
+[Xs, Ys, Zs] = sphere(50);
+f2 = surf(sqrt(R0)*Xs+C0(1), sqrt(R0)*Ys+C0(2), sqrt(R0)*Zs+C0(3), 'FaceColor','k','EdgeColor','none');%[0.9290 0.6940 0.1250]
+f3 = surf(sqrt(Ru)*Xs+Cu(1), sqrt(Ru)*Ys+Cu(2), sqrt(Ru)*Zs+Cu(3), 'FaceColor','r','EdgeColor','none');%[0.4660 0.6740 0.1880]
+view(3)
+
+% f2 = fimplicit3(z0,'FaceColor',[0.9290 0.6940 0.1250],'EdgeColor','none');
+% f3 = fimplicit3(zu,'FaceColor',[0.4660 0.6740 0.1880],'EdgeColor','none');
 
 xlim([-.8,0.2])
 ylim([-.5,0.5])
@@ -72,29 +80,32 @@ Noise = @(t, y) epsw*(2*rand(n,1)-ones(n,1));
 % Ft_noise_open = @(t, y) Xdot_open(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
 Ft_noise = @(t, y) F(y(1),y(2),y(3)) + Noise(t,[y(1),y(2),y(3)]);
 
-% timer terminate intergrator after 300s
-ode_options1 = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-5, 'Events',@mytimer);
-ode_options = odeset('RelTol', 1e-7,'AbsTol', 1e-8, 'MaxStep', 1e-5);
-tspan = 0:5;
 
-load('datalog_open_clean1_noise')
 
 % plot open-loop trajectory
-ind = 1;
-YY1 = DATALOG{ind}(:, 3);
-YY2 = DATALOG{ind}(:, 4);
-YY3 = DATALOG{ind}(:, 5);
-plot3(YY1,YY2,YY3,'r')
+% ind = 1;
+% YY1 = DATALOG{ind}(:, 3);
+% YY2 = DATALOG{ind}(:, 4);
+% YY3 = DATALOG{ind}(:, 5);
+% plot3(YY1,YY2,YY3,'r')
 
 
 % load('datalog_step6')
 
 % plot closed-loop trajectory with online noise
-for ind = 2:11
-    YY1 = DATALOG{ind}(:, 3);
-    YY2 = DATALOG{ind}(:, 4);
-    YY3 = DATALOG{ind}(:, 5);
-    plot3(YY1,YY2,YY3,'b')
+for ind = 1:30
+    YY1 = DATA.Traj{ind}(1, :);
+    YY2 = DATA.Traj{ind}(2, :);
+    YY3 = DATA.Traj{ind}(3, :);
+    f5 = plot3(YY1,YY2,YY3,'Color',[0 0.4470 0.7410],'LineWidth',0.8);%[0.3010 0.7450 0.9330]
 end
 
 hold off
+
+caz = 7.8000;
+cel = 14.3772;
+view(caz,cel)
+
+legend([f1,f2,f3,f5],{'rho','x0','xu','x(t)'},'FontSize',12)
+warning on
+title('Example 2 closed-loop with 1 unsafe region with noise','FontSize', 16)
