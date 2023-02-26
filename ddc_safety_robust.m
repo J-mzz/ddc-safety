@@ -34,7 +34,10 @@ vars = [x1,x2];
 [s1,c1] = polynomial(vars,drho-2);
 [s2,c2] = polynomial(vars,drho-2);
 [s3,c3] = polynomial(vars,drho-2);
-% slackness
+[s4,c4] = polynomial(vars,drho-2);
+[s5,c5] = polynomial(vars,drho-2);
+
+% slakness
 [~,~,v] = polynomial(vars, drho/2, 0);
 tol1 =  v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
 
@@ -68,7 +71,6 @@ ubound = 1; % |psi/rho| <= ubound
 F = [k == 0,...
 %     sos(-Y*[eps*ones(n*T, 1)+xi; eps*ones(n*T, 1)-xi] +tol1),...
 %     sos(-Y*e - rho*xu + 2*tol1),... % 2*tol1
-
     sos(-Y*e - rho*xu +1e-6),... %2e-6; 
     sos(-Y*e - rho*xu1 +1e-6),... %2e-6; 
 %     sos(-Y*e +1e-6),... %2e-6; 
@@ -81,8 +83,12 @@ F = [k == 0,...
     sos(ubound*rho -psi),...    % bound input u
     sos(ubound*rho +psi),...
     ...
+%     sos(ubound*rho -psi - s4*x0  -0*tol1),...    % bound input u
+%     sos(ubound*rho +psi - s5*x0  -0*tol1),...
+    ...
     sos(s1),sos(s2),...
-    sum(cr) == 1e-7];
+    sum(cr) == 1e-7,...
+    ];
 
 if epsw ~= 0
     kk = coefficients(-jacobian(rho,vars) -YY*[eye(n);-eye(n)], vars);
@@ -93,7 +99,7 @@ if epsw ~= 0
         sos(YY)];
 end
 
-sol = solvesos(F, [], options, [coefficients(Y,vars);c1;c2;cr;cp;c3]);
+sol = solvesos(F, [], options, [coefficients(Y,vars);c1;c2;cr;cp;c3;c4;c5]);
 out.cr = value(cr);
 out.cp = value(cp);
 out.sol = sol;

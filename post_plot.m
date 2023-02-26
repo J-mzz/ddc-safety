@@ -1,7 +1,8 @@
 close all;clear;clc
 % load data_2d_open_2unsafe
-load temp2
+load ex1_closed_clean
 
+% good = [1 5 9 15 19 30];
 
 sdpvar x1 x2
 syms z1 z2
@@ -91,7 +92,7 @@ plotpp(@(t,x)  F(x(1),x(2)) + g * U(x(1),x(2)))
 % legend([f1,f2,f3,f4],{'rho','x0','xu','div'},'FontSize',12)
 legend([f1,f2,f3,f5],{'rho','x0','xu','x(t)'},'FontSize',12)
 warning on
-title('Example 1 closed-loop with 2 unsafe regions')
+title('Example 1 closed-loop w/o online noise','FontSize', 16)
 
 xlim([-5.5 3.5])
 ylim([-5 4])

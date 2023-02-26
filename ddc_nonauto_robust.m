@@ -7,6 +7,8 @@ rng(10)
 Region.r0 = 0.25;
 % Region.c0 = [1.5; 0];     % initial
 Region.c0 = [0; -3];     % initial
+% Region.c0 = [1; 0];     % initial
+
 
 Region.ru = 0.16;
 Region.cu = [-1; -1];     % unsafe
@@ -142,4 +144,10 @@ warning on
 % data_noise = [data_DX;data_DY] - DotX(data_X(1:end-1),data_Y(1:end-1));
 % 
 % [minimum,index] = min(DATA.U);
+% good = [1 5 9 15 19 30]
 
+
+% for jjj = 1:30
+%     jjj
+%     max(abs(DATA.Traj{jjj}),[],2)
+% end
