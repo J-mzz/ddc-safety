@@ -53,7 +53,7 @@ xxx = 0.5*sin(theta);
 yyy = 0.5*cos(theta)-3;
 
 for i = 1:30
-    
+%     yprev = [xxx(12);yyy(12)];
     yprev = [xxx(i);yyy(i)];
 %     yprev = x0;
     t_all = 0;
@@ -80,9 +80,9 @@ for i = 1:30
         
         % close loop
 %         if i == 1
-%             f_curr = @(t, y) FF(y(1),y(2));
+            f_curr = @(t, y) FF(y(1),y(2));
 %         else 
-            f_curr = @(t, y) FF(y(1),y(2)) + noise_curr;
+%             f_curr = @(t, y) FF(y(1),y(2)) + noise_curr;
 %         end2
         
         [tcurr, ycurr] = ode15s(f_curr, [0, tmax_curr], yprev, ode_opt);
