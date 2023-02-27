@@ -1,6 +1,6 @@
 close all;clear;clc
 % load data_2d_open_2unsafe
-load ex1_closed_clean
+load("xu_xu.mat")
 
 % good = [1 5 9 15 19 30];
 
@@ -27,9 +27,9 @@ C0 = Region.c0;     % initial
 Ru = Region.ru;
 Cu = Region.cu;
 x0 = R0 - (x1-C0(1))^2 - (x2-C0(2))^2;   % rho > 0
-xu = Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2;   % rho < 0
-xu1 = 0.16 - (x1+1)^2 - (x2-1)^2;   % rho < 0
-
+xu = (Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2) * (0.16 - (x1+1)^2 - (x2-1)^2);   % rho < 0
+% xu1 = 0.16 - (x1+1)^2 - (x2-1)^2;   % rho < 0
+zu = Ru - (z1-Cu(1))^2 - (z2-Cu(2))^2;   % rho < 0
 %% plot
 figure(1)
 clf
@@ -71,11 +71,11 @@ f3 = fcontour(f3,'r','LineWidth',1); % 'LineColor',colormaps(1,:)
 f3.LevelList = 0;
 % f4 = fcontour(div,'b');
 % f4.LevelList = 0;
-f6 = sdisplay(xu1);
-f6 = f6{1};
-f6 = str2sym(f6);
-f6 = fcontour(f6,'r','LineWidth',1); % 'LineColor',colormaps(1,:)
-f6.LevelList = 0;
+% f6 = sdisplay(xu1);
+% f6 = f6{1};
+% f6 = str2sym(f6);
+% f6 = fcontour(f6,'r','LineWidth',1); % 'LineColor',colormaps(1,:)
+% f6.LevelList = 0;
 
 % check function value
 DIV = matlabFunction(div);
@@ -90,9 +90,9 @@ F = matlabFunction(f);
 plotpp(@(t,x)  F(x(1),x(2)) + g * U(x(1),x(2)))
 
 % legend([f1,f2,f3,f4],{'rho','x0','xu','div'},'FontSize',12)
-legend([f1,f2,f3,f5],{'rho','x0','xu','x(t)'},'FontSize',12)
+% legend([f1,f2,f3,f5],{'rho','x0','xu','x(t)'},'FontSize',12)
 warning on
-title('Example 1 closed-loop w/o online noise','FontSize', 16)
+% title('Example 1 closed-loop w/o online noise','FontSize', 16)
 
 xlim([-5.5 3.5])
 ylim([-5 4])

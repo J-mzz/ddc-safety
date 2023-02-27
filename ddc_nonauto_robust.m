@@ -26,8 +26,8 @@ vars_sdp = [x1; x2];
 Cons = setCons(eg);
 
 % data, with input u \in [-1,1]
-eps = 1; % noise level for robust data driven
-epsw = 1; % noise level of disturbance
+eps = .1; % noise level for robust data driven
+epsw = .1; % noise level of disturbance
 %% even for unbounded control: eps 1e-3 works but 1e-2 not 
 
 X = getDataRND(eg,eps,Cons.T); %
@@ -73,7 +73,7 @@ C0 = Region.c0;     % initial
 Ru = Region.ru;
 Cu = Region.cu;
 x0 = R0 - (x1-C0(1))^2 - (x2-C0(2))^2;   % rho > 0
-xu = Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2;   % rho < 0
+xu = (Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2);   % rho < 0
 xu1 = 0.16 - (x1+1)^2 - (x2-1)^2;   % rho < 0
 zu = Ru - (z1-Cu(1))^2 - (z2-Cu(2))^2;   % rho < 0
 
@@ -82,9 +82,9 @@ tol = v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20)
 
 rhof = jacobian(rho,vars)*f + rho*(jacobian(f(1),z1)+jacobian(f(2),z2));
 psig = jacobian(psi,vars)*g + psi*(jacobian(g(1),z1)+jacobian(g(2),z2));
-div = rhof + psig - rho*zu + 2e-6; %2*tol;
+div = rhof + psig - rho*zu + 1e-6; %2*tol;
 % div = rhof + psig +2*tol;
-% div2 = rhof + psig + 2e-6;
+div2 = rhof + psig + 1e-6;
 %% plot
 figure(1)
 clf
@@ -109,6 +109,7 @@ f6 = f6{1};
 f6 = str2sym(f6);
 f6 = fcontour(f6,'g');
 f6.LevelList = 0;
+
 % check function value
 DIV = matlabFunction(div);
 RHO = matlabFunction(rho);
@@ -119,10 +120,12 @@ DotX = matlabFunction(f+g*u);
 xlim([-5,5])
 ylim([-5,5])
 axis square
+grid on
 %% plot phase portrait and trajectories for closed loop
 
 warning off
 DATA = testSys(Region,f,g,u,epsw);
+% DATA = New2_testSys(Region,f,g,u,epsw,rho,psi);
 
 legend([f1,f2,f3],{'rho','x0','xu'},'FontSize',12)
 warning on

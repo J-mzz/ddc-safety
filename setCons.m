@@ -11,7 +11,7 @@ switch eg
     case {2,5}
         Cons.n 	  = 2;	% # of state
         Cons.T    = 80;	% # of sample
-        Cons.drho = 4;	% degree of rho
+        Cons.drho = 6;	% degree of rho
         Cons.dpsi = 4;  % degree of psi
         Cons.df   = 3;  % degree of f
         Cons.dg   = 0;  % degree of g
