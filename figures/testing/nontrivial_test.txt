@@ -1,0 +1,7 @@
+nontrivial_constraints reduces the number of faces of the consistency polytope.
+
+The code in ddc_safety_b_red implements the nontrivial_constraints routine in
+posing DDC with safety.
+
+Lines 23, 53, and 57 perform the redundant face identification step and include
+only nonredundant faces when forming the control certificate program.
