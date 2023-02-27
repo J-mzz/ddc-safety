@@ -1,4 +1,4 @@
-function DATA = testSys(Region,f,g,u,epsw)
+ function DATA = testSys(Region,f,g,u,epsw)
 %% plot closed loop phase protrait
 
 r0 = Region.r0;
@@ -38,7 +38,8 @@ U = matlabFunction(u);
 %% plot 3d trajectories
 x0 = [0;-2.5];
 
-%% 
+%%
+%
 T = 2;
 mu = 0.01;
 ode_opt = odeset('RelTol', 1e-6,'AbsTol', 1e-8);
@@ -47,12 +48,13 @@ ode_opt = odeset('RelTol', 1e-6,'AbsTol', 1e-8);
 % DATA.Input{1} = [];
 % DATA.Time{1} = [];
 % DATA.Switch{1} = [];
+n = 10;
 
-theta = (1:30)/30 * 2*pi;
+theta = (1:n)/n * 2*pi;
 xxx = 0.5*sin(theta);
 yyy = 0.5*cos(theta)-3;
 
-for i = 1:30
+for i = 1:n
 %     yprev = [xxx(12);yyy(12)];
     yprev = [xxx(i);yyy(i)];
 %     yprev = x0;
@@ -80,11 +82,11 @@ for i = 1:30
         
         % close loop
 %         if i == 1
-            f_curr = @(t, y) FF(y(1),y(2));
+%             f_curr = @(t, y) FF(y(1),y(2));
 %         else 
-%             f_curr = @(t, y) FF(y(1),y(2)) + noise_curr;
+            f_curr = @(t, y) FF(y(1),y(2)) + noise_curr;
 %         end2
-        
+
         [tcurr, ycurr] = ode15s(f_curr, [0, tmax_curr], yprev, ode_opt);
 
         Ydata = [Ydata, ycurr'];
@@ -107,7 +109,7 @@ for i = 1:30
     DATA.Time{i} = Tlog;
     DATA.Switch{i} = switch_times;
 end
-
+%}
 %-------------------------Trajectory: save with data
 %{
 global DATALOG
@@ -183,7 +185,7 @@ function dxdt = mypoly(t,x,epsw,u)
 global DATALOG
 global data_index
 global trajectory_index
-%     u = max(min(u,1),-1);         % option 1: bound u within [-1,1]
+    u = max(min(u,1),-1);         % option 1: bound u within [-1,1]
 %     if (u <= -1) || (u >= 1)      % option 2: large u is caused with
 %                                               numerical issues, set to 0  
 %         u = 0;
