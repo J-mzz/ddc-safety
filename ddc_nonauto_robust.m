@@ -26,8 +26,8 @@ vars_sdp = [x1; x2];
 Cons = setCons(eg);
 
 % data, with input u \in [-1,1]
-eps = .1; % noise level for robust data driven
-epsw = .1; % noise level of disturbance
+eps = 2; % noise level for robust data driven
+epsw = 2; % noise level of disturbance
 %% even for unbounded control: eps 1e-3 works but 1e-2 not 
 
 X = getDataRND(eg,eps,Cons.T); %
@@ -75,6 +75,8 @@ Cu = Region.cu;
 x0 = R0 - (x1-C0(1))^2 - (x2-C0(2))^2;   % rho > 0
 xu = (Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2);   % rho < 0
 xu1 = 0.16 - (x1+1)^2 - (x2-1)^2;   % rho < 0
+xu_combine = -(Ru - (x1-Cu(1))^2 - (x2-Cu(2))^2) * (0.16 - (x1+1)^2 - (x2-1)^2);
+
 zu = Ru - (z1-Cu(1))^2 - (z2-Cu(2))^2;   % rho < 0
 
 v = monomials(vars,0:Cons.drho/2);
@@ -96,7 +98,7 @@ f2 = f2{1};
 f2 = str2sym(f2);
 f2 = fcontour(f2,'k');
 f2.LevelList = 0;
-f3 = sdisplay(xu);
+f3 = sdisplay(xu_combine);
 f3 = f3{1};
 f3 = str2sym(f3);
 f3 = fcontour(f3,'g');
@@ -104,11 +106,11 @@ f3.LevelList = 0;
 % f4 = fcontour(div,'b');
 % f4.LevelList = 0;
 % f5 = fcontour(rho*zu,'c');
-f6 = sdisplay(xu1);
-f6 = f6{1};
-f6 = str2sym(f6);
-f6 = fcontour(f6,'g');
-f6.LevelList = 0;
+% f6 = sdisplay(xu1);
+% f6 = f6{1};
+% f6 = str2sym(f6);
+% f6 = fcontour(f6,'g');
+% f6.LevelList = 0;
 
 % check function value
 DIV = matlabFunction(div);
@@ -148,9 +150,9 @@ warning on
 % 
 % [minimum,index] = min(DATA.U);
 % good = [1 5 9 15 19 30]
-
+% bad = [15 16 22]
 
 % for jjj = 1:30
 %     jjj
-%     max(abs(DATA.Traj{jjj}),[],2)
+%     min(DATA.Traj{jjj},[],2)
 % end
