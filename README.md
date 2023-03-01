@@ -8,5 +8,8 @@ eps is the offline noise level for data-driven method.
 Current slackness setting for figures.
 
 Robsut:     sos (- Ye + 3.00E-05) & sos (-rho-s2*xu - 8.8*tol1)
+
 Nonrobust:  sos (- Ye + 1.00E-05) & sos (-rho-s2*xu - 10 *tol1)
-Open_loop:  sos (- Ye + 1.00E-05) & sos (-rho-s2*xu - 10 *tol1)
+
+Open loop:  sos (- Ye + 1.00E-05) & sos (-rho-s2*xu - 10 *tol1)
+
