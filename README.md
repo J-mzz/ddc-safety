@@ -1,12 +1,12 @@
 # ddc-safety
 
-Run ddc_nonauto_robust.m, it solves the problem when we consider noise in divergence, ie, div( rho(f+gu+noise) )
+ddc_nonauto_robust.m solves the robust problem, ie, div( rho(f+gu+noise) )
 
-epsw is the noise level for that noise, epsw = 0 will reduce the problem to no noise in divergence, ie, div( rho(f+gu) )
-eps is the noise level for data-driven method.
+epsw is the online noise level, epsw = 0 will reduce to nonrobust case.
+eps is the offline noise level for data-driven method.
 
-(un)comment line 78-79 in ddc_safety_robust.m to (un)bound input
-    
+Current slackness setting for figures.
 
-For robust case without boundness on the input, for epsw=1e-2, the green line (unsafe) will cross the red contour (rho=0).
-                with boundness on the input, this code will return junks.
+Robsut:     sos (- Ye + 3.00E-05) & sos (-rho-s2*xu - 8.8*tol1)
+Nonrobust:  sos (- Ye + 1.00E-05) & sos (-rho-s2*xu - 10 *tol1)
+Open_loop:  sos (- Ye + 1.00E-05) & sos (-rho-s2*xu - 10 *tol1)
