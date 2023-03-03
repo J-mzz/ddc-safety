@@ -1,7 +1,7 @@
 close all;clear;clc
 yalmip('clear')
 
-rng(10)
+% rng(10)
 %% safe/ unsafe region
 % radius, center
 Region.r0 = 0.25;
@@ -57,6 +57,11 @@ out.sol
 cr = out.cr;
 cp = out.cp;
 
+% for jjj = 1:size(out.Q,2)
+% eigval(jjj) = min(eig(out.Q{jjj}));
+% end
+% min(eigval)
+
 %% extract solutions
 syms z1 z2
 vars = [z1; z2];
@@ -84,9 +89,9 @@ tol = v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20)
 
 rhof = jacobian(rho,vars)*f + rho*(jacobian(f(1),z1)+jacobian(f(2),z2));
 psig = jacobian(psi,vars)*g + psi*(jacobian(g(1),z1)+jacobian(g(2),z2));
-div = rhof + psig - rho*zu + 1e-6; %2*tol;
+div = rhof + psig - rho*zu; %2*tol;
 % div = rhof + psig +2*tol;
-div2 = rhof + psig + 1e-6;
+% div2 = rhof + psig + 1e-6;
 %% plot
 figure(1)
 clf
@@ -103,8 +108,8 @@ f3 = f3{1};
 f3 = str2sym(f3);
 f3 = fcontour(f3,'g');
 f3.LevelList = 0;
-% f4 = fcontour(div,'b');
-% f4.LevelList = 0;
+f4 = fcontour(div,'b');
+f4.LevelList = 0;
 % f5 = fcontour(rho*zu,'c');
 % f6 = sdisplay(xu1);
 % f6 = f6{1};
@@ -126,7 +131,7 @@ grid on
 %% plot phase portrait and trajectories for closed loop
 
 warning off
-DATA = testSys(Region,f,g,u,epsw);
+DATA = testSys(Region,f,g,u,eps);
 % DATA = New2_testSys(Region,f,g,u,epsw,rho,psi);
 
 legend([f1,f2,f3],{'rho','x0','xu'},'FontSize',12)
