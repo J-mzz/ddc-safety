@@ -13,7 +13,6 @@ R0 = 0.5;
 Cu = [0; -1];
 Ru = 0.6;
 
-
 Cu2 = [1; 1];
 Ru2 = 0.5;
 
@@ -21,7 +20,8 @@ Ru2 = 0.5;
 X0 = struct('ineq', R0^2 - sum((x - C0).^2), 'eq', []);
 Xu = struct('ineq', Ru^2 - sum((x - Cu).^2), 'eq', []);
 % X = struct('ineq', [], 'eq', []);
-X = struct('ineq', [sum((x - Cu).^2) - (Ru)^2; sum((x - Cu).^2) - (Ru2)^2], 'eq', []);
+X = struct('ineq', [sum((x - Cu).^2) - (Ru)^2; sum((x - Cu2).^2) - (Ru2)^2], 'eq', []);
+
 
 utol = 0.01;
 % var_reduce = x(1);
@@ -30,6 +30,8 @@ utol = 0.01;
 
 xu1 = ((Ru)^2 - sum((x - Cu).^2) - utol);
 xu2 = ((Ru2)^2 - sum((x - Cu2).^2) - utol);
+
+X1 = struct('ineq', [sum((x - Cu).^2) - (Ru)^2; sum((x - Cu2).^2) - (Ru2)^2], 'eq', []);
 
 %polynomials
 
@@ -42,10 +44,10 @@ Rlim = 100;
 
 if TWO_DISK
     [h, ch, mh] = polynomial(x, d-4);
-    rho = h*xu1;
+    rho = h*xu1*xu2;
 else
     [h, ch, mh] = polynomial(x, d-2);
-    rho = h*xu1*xu2;
+    rho = h*xu1;
 end
 
 
@@ -137,6 +139,17 @@ xlim(blp*[-1,1])
 ylim(blp*[-1,1])
 axis square
 
+
+
+syms z1 z2
+vec_rho = monomials([z1;z2], 0:d);
+RHO = value(crho)'*vec_rho;
+f1 = fcontour(RHO,'b','LineWidth', 2);
+f1.LevelList = 0;
+
+
+
+
 figure(14)
 clf
 hold on
@@ -154,7 +167,3 @@ title('Bounded Input Actuation', 'fontsize', 14)
 
 
 end
-
-
-
-
