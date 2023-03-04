@@ -24,8 +24,8 @@ X0 = struct('ineq', R0^2 - sum((x - C0).^2), 'eq', []);
 Xu = struct('ineq', Ru^2 - sum((x - Cu).^2), 'eq', []);
 X = struct('ineq', [sum((x - Cu).^2) - (Ru)^2; sum((x - Cu2).^2) - (Ru2)^2], 'eq', []);
 
+% utol = 0.01;
 utol = 0.00;
-divtol = 1e-4;
 
 xu1 = ((Ru)^2 - sum((x - Cu).^2) + utol);
 xu2 = ((Ru2)^2 - sum((x - Cu2).^2) + utol);
@@ -66,8 +66,8 @@ e = [eps*ones(Cons.n*Cons.T,1)+xi; eps*ones(Cons.n*Cons.T,1)-xi];
 f = [x(2); -x(1) + (1/3)*x(1)^3 - x(2)];
 g = [0; 1];
 
-Ulim = 5;
-Rlim = 10;
+Ulim = 4;
+Rlim = 100;
 
 if TWO_DISK
     [h, ch, mh] = polynomial(x, d-4);
@@ -105,11 +105,10 @@ k = coefficients(-D1-D2-Y*N, vars);
 
 %radial limiter
 limiter = (Ulim+(x'*x)/Rlim);
-rhoscale = 0;
 % limiter = Ulim;
 
 
-[p_div, cons_div, coeff_div] = constraint_psatz(-Y*e-divtol - rhoscale*rho, X, vars, d);
+[p_div, cons_div, coeff_div] = constraint_psatz(-Y*e, X, vars, d);
 [p_0, cons_0, coeff_0] = constraint_psatz(rho - 1e-2, X0, vars, d);
 
 % [p_u1, cons_u1, coeff_u1] = constraint_psatz(-rho, xu1, vars, d);
@@ -118,20 +117,8 @@ rhoscale = 0;
 [p_top, cons_top, coeff_top] = constraint_psatz(limiter*rho - psi, X, vars, d);
 [p_bot, cons_bot, coeff_bot] = constraint_psatz(limiter*rho + psi, X, vars, d);
 
-coeff_Y = coefficients(Y,vars);
-cons_Y = sos(Y);
-% for i = 1:length(Y)
-%     [p_yc, cons_yc, coeff_yc] = constraint_psatz(Y(i), X, vars, d);
-%     coeff_Y = [coeff_Y; coeff_yc];
-%     cons_Y = [cons_Y; cons_yc];
-% end
-
-coeff = [coeff_div; coeff_0; coeff_top; coeff_bot; ch; cpsi; coeff_Y];
-cons = [cons_div; cons_0; cons_top; cons_bot; k==0; cons_Y];
-
-
-% coeff = [coeff_div; coeff_0; coeff_top; coeff_bot; ch; cpsi; coefficients(Y,vars)];
-% cons = [cons_div; cons_0; cons_top; cons_bot; k==0; sos(Y)];
+coeff = [coeff_div; coeff_0; coeff_top; coeff_bot; ch; cpsi; coefficients(Y,vars)];
+cons = [cons_div; cons_0; cons_top; cons_bot; k==0; sos(Y)];
 opts = sdpsettings('solver', 'mosek');
 
 sol = solvesos(cons, 0, opts, coeff);
@@ -201,11 +188,11 @@ axis square
 % syms z1 z2
 % vec_rho = monomials([z1;z2], 0:d);
 % RHO = value(crho)'*vec_rho;
-f1 = fcontour(@(x, y) hf([x; y]),'b','LineWidth', 2);
+f1 = fcontour(h_rec,'b','LineWidth', 2);
 Rutol = sqrt(Ru^2+utol);
-Ru2tol = sqrt(Ru2^2+utol);
+Ru2tol = sqrt(Ru^2+utol);
 plot(Cu(1) + Rutol*cos(theta), Cu(2) + Rutol*sin(theta), 'color', 'b', 'LineWidth', 2)
-plot(Cu2(1) + Ru2tol*cos(theta), Cu2(2) + Ru2tol*sin(theta), 'color', 'b', 'LineWidth', 2)
+plot(Cu2(1) + Ru2tol*cos(theta), Cu2(2) + Ru2tol*sin(theta), 'color', colors(2, :), 'LineWidth', 2)
 
 f1.LevelList = 0;
 
@@ -220,13 +207,13 @@ for i = 1:Nsample
     plot(traj{i}.x, traj{i}.u, 'color', colors(1, :))
 end
 xl = xlim;
-% plot(xl, Ulim*[1, 1], 'color', 'k', 'LineWidth', 2)
-% plot(xl, -Ulim*[1, 1], 'color', 'k', 'LineWidth', 2)
+plot(xl, Ulim*[1, 1], 'color', 'k', 'LineWidth', 2)
+plot(xl, -Ulim*[1, 1], 'color', 'k', 'LineWidth', 2)
 plot(xl, 0*[1, 1], ':k', 'LineWidth', 2)
 
 xlabel('$t$', 'interpreter', 'latex')
 ylabel('$u(t)$', 'interpreter', 'latex')
-title('Radially Bounded Input Actuation', 'fontsize', 14)
+title('Bounded Input Actuation', 'fontsize', 14)
 
 
 end
