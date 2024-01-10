@@ -1,5 +1,9 @@
- function DATA = testSys(Region,f,g,u,epsw)
+ function DATA = testSys(Region,f,g,u,epsw, color)
 %% plot closed loop phase protrait
+
+if nargin < 6
+    color = 'b';
+end
 
 r0 = Region.r0;
 c0 = Region.c0;     % initial
@@ -10,9 +14,16 @@ x = c0(1) + sqrt(r0) * sin(sample);
 y = c0(2) + sqrt(r0) * cos(sample);
 
 
-FF = matlabFunction(f+g*u);
+
 F = matlabFunction(f);
-U = matlabFunction(u);
+% G = matlabFunction(g);
+if isa(u, 'function_handle')
+    U = u;
+    FF = @(z1, z2) F(z1, z2) + g*u(z1, z2);
+else
+    U = matlabFunction(u);
+    FF = matlabFunction(f+g*u);
+end
 % G = matlabFunction(g);
 %-------------------------Trajectory: ode45
 
@@ -90,7 +101,13 @@ for i = 1:n
         [tcurr, ycurr] = ode15s(f_curr, [0, tmax_curr], yprev, ode_opt);
 
         Ydata = [Ydata, ycurr'];
-        Udata = [Udata, U(ycurr(1),ycurr(2))];
+
+        %process over the entire history, not just index 1 and 2
+        U_new = zeros(size(ycurr,1), 1);
+        for kk = 1:size(ycurr,1)
+            U_new(kk) = U(ycurr(kk, 1), ycurr(kk, 2));
+        end
+        Udata = [Udata, U_new'];
         Tlog = [Tlog; t_all + tcurr];
         switch_times = [switch_times; t_all + tmax_curr];
 
@@ -101,7 +118,7 @@ for i = 1:n
 %     if i == 1
 %         plot(Ydata(1,:),Ydata(2,:),'r','LineWidth',1)
 %     else
-        plot(Ydata(1,2:end),Ydata(2,2:end),'b')
+        plot(Ydata(1,2:end),Ydata(2,2:end),color);
 %     end
     
     DATA.Traj{i} = Ydata;
