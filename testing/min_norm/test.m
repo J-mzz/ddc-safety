@@ -125,9 +125,27 @@ D2 = matlabFunction(D2);
 % given N
 % get @(z1,z2) Y(z), rho(z), phi(z), gamma(z) 
 
-u_min_norm = @(z1, z2) min_norm_ddc([z1,z2], DR,D1,D2,N,e,epsw);
+% u_min_norm = @(z1, z2) min_norm_ddc([z1,z2], DR,D1,D2,N,e,epsw);
 
+
+%% test the min-norm optimizer
+%use the optimizer (https://yalmip.github.io/command/optimizer/) function 
+%to solve a parameterized repeated call
+P = min_norm_ddc_optimizer(DR, D1, D2, N, e, epsw);
+
+u_out = P([0; -3]);
+% u_min_norm = @(z1, z2) P([z1; z2]);
+u_min_norm = @(z1, z2) u_min_norm_ddc(P, z1, z2, U);
+
+
+%% plot
 warning off
 DATA_min_norm = testSys(Region,f,g,u_min_norm,0, 'm');
 warning on
 
+
+
+function u_out = u_min_norm_ddc(P, z1, z2, U)
+    [u_out, errorcode]= P([z1; z2]);
+    u_rational = U(z1, z2);
+end
