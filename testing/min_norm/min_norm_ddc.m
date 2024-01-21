@@ -1,6 +1,5 @@
 function [u] = min_norm_ddc(z, DR,D1,D2,N,e,epsw)
 
-z = [-3,0];
 u_min = sdpvar(1);
 Y = sdpvar(1, size(N,1),'full');
 
