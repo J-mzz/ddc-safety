@@ -1,6 +1,7 @@
+mbc_nonauto
 %run mbc_nonauto.m first
 %compare the rational trajectory with the closed loop trajectory
-
+syms z1 z2
 vars = [z1; z2];
 % rho_rec = polyval_func(rho, vars);
 %div(rho(f + g u))
@@ -13,26 +14,65 @@ rhog = jacobian(rho,vars)*g + rho*(jacobian(g(1),z1)+jacobian(g(2),z2));
 th0 = matlabFunction(rhof);
 th1 = matlabFunction(rhog);
 
-u_min_norm = @(z1, z2) min_norm_scalar([z1, z2], th0, th1);
+v = monomials(vars,0:d_r/2);
+tol =  v'*1e-8*eye(length(v))*v;
+tol = matlabFunction(tol);
 
-DATA_min_norm = testSys(Region,f,g,u_min_norm,1e-3, 'm');
 
+P = min_norm_mbc_optimizer(th0, th1, tol);
 
+u_out = P([0; -2.5]);
+% u_min_norm = @(z1, z2) P([z1; z2]);
+u_min_norm = @(z1, z2) u_min_norm_mbc(P, z1, z2, U);
+
+warning off
+DATA_min_norm = testSys(Region,f,g,u_min_norm,0, 'm');
+warning on
+
+xlim([-5,2])
+ylim([-5,2])
 %% compare the input actuations
 figure(23)
-hold on
-for i = 1:length(DATA_min_norm.Input)
-% for i = 1:1
-    urat = DATA_rational.Input{i};
-    unorm = DATA_min_norm.Input{i};
-    subplot(2,1, 1)
-    plot(DATA_rational.Time{i}, urat, 'b');
+% hold on
+% for i = 1:length(DATA_min_norm.Input)
+% % for i = 1:1
+%     urat = DATA_rational.Input{i};
+%     unorm = DATA_min_norm.Input{i};
+%     subplot(2,1, 1)
+%     plot(DATA_rational.Time{i}, urat, 'b');
+% 
+%     ylabel('u(t)')
+%     title('Rational Controller', 'FontSize', 16)
+%     subplot(2,1,2)
+%     plot(DATA_min_norm.Time{i}, unorm, 'b');
+%     ylabel('u(t)')
+%     title('Min Norm Controller', 'fontsize', 16)
+% xlabel('time')
+% end
 
-    ylabel('u(t)')
-    title('Rational Controller', 'FontSize', 16)
-    subplot(2,1,2)
+subplot(2,1,1)
+for i = 1:length(DATA_rational.Input)
+    urat = DATA_rational.Input{i};
+    plot(DATA_rational.Time{i}, urat, 'm');
+    hold on
+end
+ylabel('u(t)')
+title('Rational Controller', 'FontSize', 16)
+
+subplot(2,1,2) 
+for i = 1:length(DATA_min_norm.Input)
+    unorm = DATA_min_norm.Input{i};
     plot(DATA_min_norm.Time{i}, unorm, 'b');
-    ylabel('u(t)')
-    title('Min Norm Controller', 'fontsize', 16)
+    hold on
+end
+
+ylabel('u(t)')
+title('Min Norm Controller', 'fontsize', 16)
 xlabel('time')
+
+
+%% 
+function u_out = u_min_norm_mbc(P, z1, z2, U)
+    [u_out, errorcode]= P([z1; z2]);
+    u_rational = U(z1, z2);
 end
