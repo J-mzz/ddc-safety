@@ -49,31 +49,15 @@ elseif strcmp(mode,'density')
              jacobian(psi,vars)*g + psi*(jacobian(g(1),x1)+jacobian(g(2),x2));
 end
 
-ubound = 1; % bound on input: |psi/rho| < ubound
-
 % constraints
-% without eq point
-
 F = [sos(div + 2*tol1), ...
      sos(rho  - x0*s1 -1e-8), ...     % r >= 0, in initial x0
      sos(-rho - xu*s2 -1e-8), ...     % r <= 0, in unsafe xu
-     sos(ubound*rho + psi), ...
-     sos(ubound*rho - psi), ...
+     sos(-xu*rho + psi), ...
+     sos(-xu*rho - psi), ...
      sos(s1),sos(s2)];
 options = sdpsettings('solver','mosek','verbose',0);
 sol = solvesos(F, [], options, [cr;c1;c2;cp])
-
-% with eq point
-
-% F = [sos(rho + tol1 + xe*s0), ...
-%      sos(rho - x0*s1 -tol1), ...      % r >= 0, in initial x0
-%      sos(rho - xe*s3 -tol1), ...      % r >= 0, in neighbor of equilibrium
-%      sos(-rho - xu*s2 -tol1), ...     % r <= 0, in unsafe xu
-%      sos(ubound*rho + psi), ...
-%      sos(ubound*rho - psi), ...
-%      sos(s1),sos(s2),sos(s3),sos(s0)];
-% options = sdpsettings('solver','mosek','verbose',0);
-% sol = solvesos(F, [], options, [cr;c1;c2;cp;c3;c0])
 
 % extract solutions for plot
 cr = value(cr);
@@ -121,8 +105,8 @@ f3 = f3{1};
 f3 = str2sym(f3);
 f3 = fcontour(f3,'g');
 f3.LevelList = 0;
-f4 = fcontour(div,'b');
-f4.LevelList = 0;
+% f4 = fcontour(div,'b');
+% f4.LevelList = 0;
 
 DIV = matlabFunction(div);
 RHO = matlabFunction(rho);
