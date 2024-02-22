@@ -1,8 +1,13 @@
- function DATA = testSys(Region,f,g,u,epsw, color)
+ function DATA = testSys(Region,f,g,u,epsw, color,flag)
 %% plot closed loop phase protrait
 
 if nargin < 6
     color = 'b';
+end
+
+if nargin < 7
+    flag = 0;   % flag =1, quiver for min-norm;
+                % flag =0, quiver for rational;
 end
 
 r0 = Region.r0;
@@ -51,8 +56,8 @@ x0 = [0;-2.5];
 
 %%
 %
-T = 2;
-mu = 0.1;
+T = 20;
+mu = 1;
 ode_opt = odeset('RelTol', 1e-6,'AbsTol', 1e-8);
 
 % DATA.Traj{1} = [];
@@ -189,11 +194,15 @@ axis square
 
 
 %% plot phase portrait
-
-plotpp(@(t,x)  F(x(1),x(2)) + g * U(x(1),x(2))) 
-
+if flag
+    plotpp(@(t,x)  F(x(1),x(2)) + g * U(x(1),x(2)), 'quivercolor', [1,.6,1]) 
+else
+    plotpp(@(t,x)  F(x(1),x(2)) + g * U(x(1),x(2)), 'quivercolor', [.6,.6,1]) 
 end
 
+
+
+end
 
 function dxdt = mypoly(t,x,epsw,u)
 global DATALOG
