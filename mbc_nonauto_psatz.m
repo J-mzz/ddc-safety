@@ -48,7 +48,7 @@ elseif strcmp(mode,'density')
 end
 
 X0 = struct('ineq', x0, 'eq', []);
-Xu = struct('ineq', [], 'eq', xu);
+Xu = struct('ineq', xu, 'eq', []);
 Xall = struct('ineq', -xu, 'eq', []);
 [p_div, con_div, coeff_div] = constraint_psatz(div-tol1, Xall, x, d+2);
 [p_init, con_init, coeff_init] = constraint_psatz(rho -tolset, X0, x, d);
