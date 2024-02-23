@@ -15,8 +15,8 @@ c0 = Region.c0;     % initial
 
 n = 10; % # of samples
 sample = (1:n)/n * 2*pi;
-x = c0(1) + sqrt(r0) * sin(sample);
-y = c0(2) + sqrt(r0) * cos(sample);
+x = c0(1) + sqrt(r0) * cos(sample);
+y = c0(2) + sqrt(r0) * sin(sample);
 
 
 

@@ -15,9 +15,9 @@ x = [x1; x2];
 
 g = [0; 1];
 
-f = [x2; -x1 - x2];
+% f = [x2; -x1 - x2];
 
-% f = [x2; -x1 + 1/3*x1^3 - x2];
+f = [x2; -x1 + 1/3*x1^3 - x2];
 
 [rho,cr] = polynomial(vars, d, 0);      % rho
 [psi,cp] = polynomial(vars, d, 0);      % psi = rho*u
@@ -50,7 +50,7 @@ end
 X0 = struct('ineq', x0, 'eq', []);
 Xu = struct('ineq', [], 'eq', xu);
 Xall = struct('ineq', -xu, 'eq', []);
-[p_div, con_div, coeff_div] = constraint_psatz(div-tol1, Xall, x, d);
+[p_div, con_div, coeff_div] = constraint_psatz(div-tol1, Xall, x, d+2);
 [p_init, con_init, coeff_init] = constraint_psatz(rho -tolset, X0, x, d);
 [p_unsafe, con_unsafe, coeff_unsafe] = constraint_psatz(-rho -tolset, Xu, x, d);
 

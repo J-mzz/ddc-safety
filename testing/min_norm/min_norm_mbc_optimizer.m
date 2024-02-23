@@ -5,12 +5,13 @@ z = sdpvar(2, 1);
 
 rhof = th0(z(1), z(2));
 rhog = th1(z(1), z(2));
-tol1 = tol(z(1), z(2));
+% tol1 = tol(z(1), z(2));
+tol1 = tol;
 % tol1 = 0;
 
 F = [
 %     rhof+rhog*u_min + 1e-8 >= 0,...
-    rhof+rhog*u_min - 2*tol1 >= 0,...
+    rhof+rhog*u_min - tol1 >= 0,...
     ];
 
 options = sdpsettings('solver', 'mosek', 'verbose', 0);
