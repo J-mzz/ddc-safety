@@ -81,7 +81,7 @@ for i = 1:n
     Udata = U(yprev(1),yprev(2));
     Tlog = 0;
     
-    fprintf('current traj: %d \n', i)
+    % fprintf('current traj: %d \n', i)
     
     while t_all < T
         tmax_curr = exprnd(mu);

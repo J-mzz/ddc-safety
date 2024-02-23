@@ -1,4 +1,4 @@
-mbc_nonauto
+mbc_nonauto_psatz
 close all
 %run mbc_nonauto.m first
 %compare the rational trajectory with the closed loop trajectory

@@ -7,7 +7,7 @@ yalmip('clear')
 % define a,b,c,s1,s2
 sdpvar x1 x2
 vars = [x1; x2];
-d_r = 4;
+d_r = 6;
 
 % system
 A = [-0.6409    0.8962
@@ -29,7 +29,9 @@ f = [x2; -x1 + 1/3*x1^3 - x2];
 
 % slackness
 [~,~,v] = polynomial(vars, d_r/2, 0);  
-tol1 =  v'*1e-8*eye(length(v))*v;       % slackness in rho
+% tol1 =  v'*1e-8*eye(length(v))*v;       % slackness in rho
+
+tol1 = 1e-6;
 
 % set x0, xu
 R0 = 0.25;  C0 = [0; -3];        % radius,center
@@ -50,14 +52,16 @@ elseif strcmp(mode,'density')
 end
 
 % constraints
-F = [sos(div + 2*tol1), ...
-     sos(rho  - x0*s1 -1e-8), ...     % r >= 0, in initial x0
-     sos(-rho - xu*s2 -1e-8), ...     % r <= 0, in unsafe xu
+F = [sos(div - tol1), ...
+     sos(rho  - x0*s1 -1e-3), ...     % r >= 0, in initial x0
+     sos(-rho - xu*s2 -1e-3), ...     % r <= 0, in unsafe xu
      sos(-xu*rho + psi), ...
      sos(-xu*rho - psi), ...
-     sos(s1),sos(s2)];
-options = sdpsettings('solver','mosek','verbose',0);
-sol = solvesos(F, [], options, [cr;c1;c2;cp])
+     sos(s1)];
+% sos(s2) in constraint, only need to be <0 on boundary of x0 if starting
+% in a different region
+options = sdpsettings('solver','mosek','verbose',2);
+sol = solvesos(F, norm(cp, 'inf'), options, [cr;c1;c2;cp])
 
 % extract solutions for plot
 cr = value(cr);
@@ -75,9 +79,10 @@ psi = cp'*vec_psi;
 u = psi/rho;
 U = matlabFunction(u);
 
-v = monomials(vars,0:d_r/2);
-tol =  v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
-
+% v = monomials(vars,0:d_r/2);
+% tol =  v'*1e-8*eye(length(v))*v;       % slackness, as mu in (20) 
+% tol = 1e-5;
+tol = tol1;
 % system
 f = A*vars;
 f = [z2; -z1 + 1/3*z1^3 - z2];
