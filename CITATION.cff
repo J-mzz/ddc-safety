@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+title: "ddc-safety: code for Robust data-driven safe control using density functions"
+type: software
+authors:
+  - family-names: Zheng
+    given-names: Jian
+repository-code: "https://github.com/J-mzz/ddc-safety"
+license: MIT
+preferred-citation:
+  type: article
+  title: "Robust data-driven safe control using density functions"
+  authors:
+    - family-names: Zheng
+      given-names: Jian
+    - family-names: Dai
+      given-names: Tianyu
+    - family-names: Miller
+      given-names: Jared
+    - family-names: Sznaier
+      given-names: Mario
+  journal: "IEEE Control Systems Letters"
+  volume: 7
+  start: 2611
+  end: 2616
+  year: 2023
+  publisher:
+    name: IEEE
+  doi: "10.1109/LCSYS.2023.3287801"
